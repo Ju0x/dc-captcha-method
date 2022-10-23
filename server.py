@@ -30,18 +30,21 @@ def captcha():
         with open("./ids.json", "r", encoding="utf-8") as file:
             data = json.load(file)
 
-        if data.get("active"):
-            for _entry in data["active"]:
-                if data["active"][_entry].get("id"):
-                    if data["active"][_entry]["id"] == rq.args["id"]:
+        if not data.get("active"):
+            return
+        
+        for _entry in data["active"]:
+            if not data["active"][_entry].get("id"):
+                continue
+           
+            if data["active"][_entry]["id"] == rq.args["id"]:
+                if data["active"][_entry]["request_count"] < 2:
+                    data["active"][_entry]["request_count"] += 1
 
-                        if data["active"][_entry]["request_count"] < 2:
-                            data["active"][_entry]["request_count"] += 1
+                with open("./ids.json", "w+", encoding="utf-8") as file:
+                    json.dump(data, file, indent=4)
 
-                        with open("./ids.json", "w+", encoding="utf-8") as file:
-                            json.dump(data, file, indent=4)
-
-                        return send_file("./captcha_pixel.png")
+                return send_file("./captcha_pixel.png")
 
     return abort(403)
 
